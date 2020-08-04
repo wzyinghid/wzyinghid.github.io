@@ -1,0 +1,375 @@
+<!DOCTYPE HTML>
+<html lang="en" >
+    
+    <head>
+        
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>结合postMessage与localStorage | zunya.wang</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 2.6.7">
+        
+        
+        <meta name="HandheldFriendly" content="true"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+        <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+        
+    <link rel="stylesheet" href="../gitbook/style.css">
+    
+        
+        <link rel="stylesheet" href="../gitbook/plugins/gitbook-plugin-highlight/website.css">
+        
+    
+        
+        <link rel="stylesheet" href="../gitbook/plugins/gitbook-plugin-search/search.css">
+        
+    
+        
+        <link rel="stylesheet" href="../gitbook/plugins/gitbook-plugin-fontsettings/website.css">
+        
+    
+    
+
+        
+    
+    
+    <link rel="next" href="../storage/4.html" />
+    
+    
+    <link rel="prev" href="../storage/2.html" />
+    
+
+        
+    </head>
+    <body>
+        
+        
+    <div class="book"
+        data-level="1.3"
+        data-chapter-title="结合postMessage与localStorage"
+        data-filepath="storage/3.md"
+        data-basepath=".."
+        data-revision="Tue Aug 04 2020 09:52:26 GMT+0800 (CST)"
+        data-innerlanguage="">
+    
+
+<div class="book-summary">
+    <nav role="navigation">
+        <ul class="summary">
+            
+            
+            
+            
+
+            
+
+            
+    
+        <li class="chapter " data-level="0" data-path="index.html">
+            
+                
+                    <a href="../index.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                        Introduction
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="1" data-path="storage/readme.html">
+            
+                
+                    <a href="../storage/readme.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.</b>
+                        
+                        基于postMessage的本地跨域数据存储方案
+                    </a>
+            
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.1" data-path="storage/1.html">
+            
+                
+                    <a href="../storage/1.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.1.</b>
+                        
+                        浏览器支持的几种storage
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="storage/2.html">
+            
+                
+                    <a href="../storage/2.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.2.</b>
+                        
+                        postMessage的用法
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.3" data-path="storage/3.html">
+            
+                
+                    <a href="../storage/3.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.3.</b>
+                        
+                        结合postMessage与localStorage
+                    </a>
+            
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="storage/4.html">
+            
+                
+                    <a href="../storage/4.html">
+                
+                        <i class="fa fa-check"></i>
+                        
+                            <b>1.4.</b>
+                        
+                        演示及FAQ
+                    </a>
+            
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+
+            
+            <li class="divider"></li>
+            <li>
+                <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+                    Published with GitBook
+                </a>
+            </li>
+            
+        </ul>
+    </nav>
+</div>
+
+    <div class="book-body">
+        <div class="body-inner">
+            <div class="book-header" role="navigation">
+    <!-- Actions Left -->
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="../" >zunya.wang</a>
+    </h1>
+</div>
+
+            <div class="page-wrapper" tabindex="-1" role="main">
+                <div class="page-inner">
+                
+                
+                    <section class="normal" id="section-">
+                    
+                        <h3 id="&#x7ED3;&#x5408;postmessage&#x4E0E;localstorage">&#x7ED3;&#x5408;postMessage&#x4E0E;localStorage</h3>
+<p><a href="https://as.zbjimg.com/static/nodejs-zbj-statistics-web/lib/js/commonstorage.js" target="_blank">commonstorage.js</a></p>
+<pre><code class="lang-js">(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">&apos;message&apos;</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">message</span>) </span>{
+        <span class="hljs-keyword">var</span> origin = message.origin || message.originalEvent.origin;
+        <span class="hljs-comment">// &#x53EA;&#x63A5;&#x6536;&#x6765;&#x81EA;.zbj.com&#x548C;.zbjdev.com&#x7684;&#x6D88;&#x606F;</span>
+        <span class="hljs-keyword">if</span> (<span class="hljs-regexp">/\.zbj\.com/</span>.test(origin) || <span class="hljs-regexp">/\.zbjdev\.com/</span>.test(origin)) {
+            <span class="hljs-comment">// &#x53EA;&#x63A5;&#x53D7;&#x5B57;&#x7B26;&#x4E32;&#x8F6C;json&#x7684;&#x6570;&#x636E;</span>
+            <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> message.data == <span class="hljs-string">&apos;string&apos;</span>) {
+                <span class="hljs-keyword">var</span> msg = <span class="hljs-built_in">JSON</span>.parse(message.data);
+                <span class="hljs-keyword">if</span> (msg &amp;&amp; msg.api &amp;&amp; msg.key) {
+                    <span class="hljs-keyword">switch</span> (msg.api) {
+                        <span class="hljs-keyword">case</span> <span class="hljs-string">&apos;getItem&apos;</span>:
+                            <span class="hljs-keyword">var</span> value = localStorage.getItem(msg.key);
+                            postDataRefer(<span class="hljs-built_in">JSON</span>.stringify({
+                                api: <span class="hljs-string">&apos;getItemCb&apos;</span>,
+                                key: msg.key,
+                                value: value,
+                            }));
+                            <span class="hljs-keyword">break</span>;
+                        <span class="hljs-keyword">case</span> <span class="hljs-string">&apos;setItem&apos;</span>:
+                            localStorage.setItem(msg.key, msg.value);
+                            <span class="hljs-keyword">break</span>;
+                        <span class="hljs-keyword">case</span> <span class="hljs-string">&apos;removeItem&apos;</span>:
+                            localStorage.removeItem(msg.key);
+                            <span class="hljs-keyword">break</span>;
+                    }
+                }
+            }
+        }
+    }, <span class="hljs-literal">false</span>);
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">postDataRefer</span>(<span class="hljs-params">msg</span>) </span>{
+        <span class="hljs-built_in">window</span>.parent.postMessage(msg, <span class="hljs-string">&apos;*&apos;</span>);
+    }
+})();
+</code></pre>
+<p><a href="https://git.zhubajie.la/zbj-fe/fe-zbj-liveshop-res/blob/master/src/commonStorage.js" target="_blank">commonStorage.js</a></p>
+<pre><code class="lang-js"><span class="hljs-built_in">module</span>.exports = {
+    inited: <span class="hljs-literal">false</span>,
+    getItemCb: [],
+    postCache: [],
+    _createProxy: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">var</span> _this = <span class="hljs-keyword">this</span>;
+        <span class="hljs-comment">// &#x5DF2;&#x6709;iframe</span>
+        <span class="hljs-keyword">var</span> reg = <span class="hljs-regexp">/^(http|https):\/\/(.*)(zbjdev.com|test.tp.com|zomworkdev.com)/</span>;
+        <span class="hljs-keyword">var</span> domain = reg.test(location.origin) ? <span class="hljs-string">&quot;.test.zbjdev.com&quot;</span> : <span class="hljs-string">&quot;.zbj.com&quot;</span>;
+        $(<span class="hljs-string">&apos;iframe&apos;</span>).each(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">index, item</span>) </span>{
+            <span class="hljs-comment">// console.log($(item).attr(&apos;src&apos;))</span>
+            <span class="hljs-keyword">if</span> ($(item).attr(<span class="hljs-string">&apos;src&apos;</span>).indexOf(<span class="hljs-string">&apos;//statistics&apos;</span> + domain + <span class="hljs-string">&apos;/v4&apos;</span>) &gt; -<span class="hljs-number">1</span>) {
+                _this.inited = <span class="hljs-literal">true</span>;
+                _this.storageIfr = $(<span class="hljs-string">&apos;iframe&apos;</span>)[index].contentWindow;
+            }
+        })
+        <span class="hljs-keyword">if</span> (!_this.inited) {
+            _this.ifr = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">&apos;iframe&apos;</span>);
+            _this.ifr.src = <span class="hljs-string">&apos;https://statistics&apos;</span> + domain + <span class="hljs-string">&apos;/v4&apos;</span>;
+            _this.ifr.style.display = <span class="hljs-string">&apos;none&apos;</span>;
+            _this.ifr.onload = _this.ifr.onreadystatechange = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+                _this.storageIfr = _this.ifr.contentWindow;
+                <span class="hljs-keyword">if</span> (_this.postCache.length) {
+                    _this.postCache.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">item</span>) </span>{
+                        _this.postMessage(item);
+                    });
+                }
+            }
+            <span class="hljs-built_in">document</span>.documentElement.appendChild(_this.ifr);
+        }
+    },
+    getItem: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">key, cb</span>) </span>{
+        <span class="hljs-keyword">var</span> _this = <span class="hljs-keyword">this</span>;
+        _this.postMessage({
+            api: <span class="hljs-string">&apos;getItem&apos;</span>,
+            key: key
+        });
+        <span class="hljs-keyword">if</span> (_this.getItemCb[key]) {
+            <span class="hljs-built_in">window</span>.removeEventListener(<span class="hljs-string">&apos;message&apos;</span>, _this.getItemCb[key], <span class="hljs-literal">false</span>);
+        }
+        _this.getItemCb[key] = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">message</span>) </span>{
+            <span class="hljs-keyword">if</span> (<span class="hljs-regexp">/\/\/statistics\./</span>.test(message.origin)) {
+                <span class="hljs-keyword">try</span> {
+                    <span class="hljs-keyword">var</span> msg = <span class="hljs-built_in">JSON</span>.parse(message.data);
+                    <span class="hljs-keyword">if</span> (msg &amp;&amp; msg.api &amp;&amp; msg.api == <span class="hljs-string">&apos;getItemCb&apos;</span> &amp;&amp; msg.key == key) {
+                        cb(msg.value);
+                    }
+                } <span class="hljs-keyword">catch</span> (err) {
+                    <span class="hljs-built_in">console</span>.error(<span class="hljs-string">&apos;&#x6D88;&#x606F;&#x9519;&#x8BEF;&apos;</span>, err);
+                }
+            }
+        }
+        <span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">&apos;message&apos;</span>, _this.getItemCb[key], <span class="hljs-literal">false</span>);
+    },
+    setItem: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">key, value, cb</span>) </span>{
+        <span class="hljs-keyword">var</span> _this = <span class="hljs-keyword">this</span>;
+        _this.postMessage({
+            api: <span class="hljs-string">&apos;setItem&apos;</span>,
+            key: key,
+            value: value
+        });
+    },
+    removeItem: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">key, cb</span>) </span>{
+        <span class="hljs-keyword">var</span> _this = <span class="hljs-keyword">this</span>;
+        _this.postMessage({
+            api: <span class="hljs-string">&apos;removeItem&apos;</span>,
+            key: key
+        });
+    },
+    postMessage: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">params</span>) </span>{
+        <span class="hljs-keyword">var</span> _this = <span class="hljs-keyword">this</span>;
+        <span class="hljs-comment">// ifr&#x5DF2;&#x521D;&#x59CB;&#x5316;&#x5B8C;&#x6210;&#xFF0C;&#x76F4;&#x63A5;post&#xFF0C;&#x5426;&#x5219;&#x5148;&#x6682;&#x5B58;&#x5230;postCache&#x4E2D;</span>
+        <span class="hljs-keyword">if</span> (_this.storageIfr) {
+            _this.storageIfr.postMessage(<span class="hljs-built_in">JSON</span>.stringify(params), <span class="hljs-string">&apos;*&apos;</span>)
+        } <span class="hljs-keyword">else</span> {
+            _this.postCache.push(params)
+        }
+    }
+}
+<span class="hljs-built_in">module</span>.exports._createProxy();
+</code></pre>
+<ol>
+<li>init iframe</li>
+<li>postCache</li>
+<li>addEventListener&amp;&amp;removeEventListener
+<code>
+</code></li>
+</ol>
+
+                    
+                    </section>
+                
+                
+                </div>
+            </div>
+        </div>
+
+        
+        <a href="../storage/2.html" class="navigation navigation-prev " aria-label="Previous page: postMessage的用法"><i class="fa fa-angle-left"></i></a>
+        
+        
+        <a href="../storage/4.html" class="navigation navigation-next " aria-label="Next page: 演示及FAQ"><i class="fa fa-angle-right"></i></a>
+        
+    </div>
+</div>
+
+        
+<script src="../gitbook/app.js"></script>
+
+    
+    <script src="../gitbook/plugins/gitbook-plugin-search/lunr.min.js"></script>
+    
+
+    
+    <script src="../gitbook/plugins/gitbook-plugin-search/search.js"></script>
+    
+
+    
+    <script src="../gitbook/plugins/gitbook-plugin-sharing/buttons.js"></script>
+    
+
+    
+    <script src="../gitbook/plugins/gitbook-plugin-fontsettings/buttons.js"></script>
+    
+
+    
+    <script src="../gitbook/plugins/gitbook-plugin-livereload/plugin.js"></script>
+    
+
+<script>
+require(["gitbook"], function(gitbook) {
+    var config = {"highlight":{},"search":{"maxIndexSize":1000000},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"livereload":{}};
+    gitbook.start(config);
+});
+</script>
+
+        
+    </body>
+    
+</html>
