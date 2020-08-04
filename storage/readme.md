@@ -4,3 +4,4 @@
 1. [浏览器支持的几种storage](./1.html)
 2. [postMessage的用法](./2.html)
 3. [结合postMessage与localStorage](./3.html)
+4. [演示及FAQ](./4.html)
